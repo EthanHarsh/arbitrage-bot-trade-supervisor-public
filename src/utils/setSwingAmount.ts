@@ -1,4 +1,5 @@
 import {utils} from 'ethers';
+import checkVerb from './checkVerb';
 
 export default async function setSwingAmount(tokenBalances, stats, sell, buy, sellPrice, buyPrice, swingTradeAmount) {
   const sellObj = findToken(tokenBalances, sell);
@@ -16,8 +17,8 @@ export default async function setSwingAmount(tokenBalances, stats, sell, buy, se
   }
   const buyAmount = findBuy(sellAmount, buyObj, sellPrice, buyPrice);
   const {sellAmountWei, buyAmountWei} = formatAmounts(sellAmount, buyAmount, sellObj.decimals, buyObj.decimals);
-  console.log(`Sell amount wei => ${sellAmountWei}`);
-  console.log(`Buy amount wei => ${buyAmountWei}`);
+  checkVerb(`Sell amount wei => ${sellAmountWei}`);
+  checkVerb(`Buy amount wei => ${buyAmountWei}`);
   return {
     flag,
     sellAmount,
@@ -63,12 +64,12 @@ async function firstTier(sellObj, buyObj, stats, swingTradeAmount) {
 }
 
 function findBuy(sellAmount, buyObj, sellPrice, buyPrice) {
-  console.log(`Sell price => ${sellPrice}`);
-  console.log(`Buy price => ${buyPrice}`);
+  checkVerb(`Sell price => ${sellPrice}`);
+  checkVerb(`Buy price => ${buyPrice}`);
   const sellAmountUsd = sellAmount * sellPrice;
   const buyAmount = sellAmountUsd / buyPrice;
-  console.log(`Sell amount => ${sellAmount}`);
-  console.log(`Buy amount => ${buyAmount}`);
+  checkVerb(`Sell amount => ${sellAmount}`);
+  checkVerb(`Buy amount => ${buyAmount}`);
   return buyAmount - (0.01 * buyAmount);
 }
 

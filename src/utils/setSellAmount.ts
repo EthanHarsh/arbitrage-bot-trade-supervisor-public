@@ -1,5 +1,6 @@
 import {utils} from 'ethers';
 import findTx from './findTransactions';
+import checkVerb from './checkVerb';
 
 export default async function setSellAmount(tokenBalances, stats, sell, buy, sellPrice, buyPrice) {
   const sellObj = findToken(tokenBalances, sell);
@@ -17,8 +18,8 @@ export default async function setSellAmount(tokenBalances, stats, sell, buy, sel
   }
   const buyAmount = findBuy(sellAmount, buyObj, sellPrice, buyPrice);
   const {sellAmountWei, buyAmountWei} = formatAmounts(sellAmount, buyAmount, sellObj.decimals, buyObj.decimals);
-  console.log(`Sell amount wei => ${sellAmountWei}`);
-  console.log(`Buy amount wei => ${buyAmountWei}`);
+  checkVerb(`Sell amount wei => ${sellAmountWei}`);
+  checkVerb(`Buy amount wei => ${buyAmountWei}`);
   return {
     flag,
     sellAmount,
@@ -62,7 +63,7 @@ async function firstTier(sellObj, buyObj, stats) {
     const time = new Date().getTime();
     const timeLimit = time - 1800000;
     const timeFlag = await findTx(timeLimit);
-    console.log(`Time flag => ${timeFlag}`);
+    checkVerb(`Time flag => ${timeFlag}`);
     if (timeFlag) {
       const sellAmount = amount / 2;
       return {
@@ -90,7 +91,7 @@ async function secondTier(amount, amountBuy, stats) {
     const time = new Date().getTime();
     const timeLimit = time - 3600000;
     const timeFlag = await findTx(timeLimit);
-    console.log(`Time flag => ${timeFlag}`);
+    checkVerb(`Time flag => ${timeFlag}`);
     if (timeFlag) {
       const sellAmount = amount / 3;
       return {
@@ -107,12 +108,12 @@ async function secondTier(amount, amountBuy, stats) {
 }
 
 function findBuy(sellAmount, buyObj, sellPrice, buyPrice) {
-  console.log(`Sell price => ${sellPrice}`);
-  console.log(`Buy price => ${buyPrice}`);
+  checkVerb(`Sell price => ${sellPrice}`);
+  checkVerb(`Buy price => ${buyPrice}`);
   const sellAmountUsd = sellAmount * sellPrice;
   const buyAmount = sellAmountUsd / buyPrice;
-  console.log(`Sell amount => ${sellAmount}`);
-  console.log(`Buy amount => ${buyAmount}`);
+  checkVerb(`Sell amount => ${sellAmount}`);
+  checkVerb(`Buy amount => ${buyAmount}`);
   return buyAmount - (0.01 * buyAmount);
 }
 

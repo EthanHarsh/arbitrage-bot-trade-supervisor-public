@@ -23,7 +23,6 @@ const findTx = async (timeLimit) => {
         time: {$gt: timeLimit},
       })
       .limit(1);
-  console.log(transaction);
   if (transaction.length > 0) {
     return false;
   } else {
