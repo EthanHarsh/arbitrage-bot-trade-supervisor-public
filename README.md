@@ -5,7 +5,7 @@ _Ensures Token Purchase Meets Purchase Standards Microservice_
 
 ## Description
 
-This is a token supervising microservice for the DeFi arbitrage bot. This service uses Typescript, Express.js, and Ethers.js, all of which are Javascript frameworks. Application checks incoming requests to see if they meet apurchase requirements.
+This is a token supervising microservice for the DeFi arbitrage bot. This service uses Typescript, Express.js, and Ethers.js, all of which are Javascript frameworks. Application checks incoming requests to see if they meet purchase requirements.
 
 ## Quick Start
 
@@ -31,7 +31,7 @@ npm run start
 ```
 ## Development
 ### Dev Container
-Activate Development container using your prefered IDE.
+Activate Development container using your preferred IDE.
 ### Using NPM - Development Start
 #### Start for Development - _Nodemon_
 ```
