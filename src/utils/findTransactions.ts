@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import handleError from './handleError';
 const transactionSchema = new mongoose.Schema({
   action: String,
   sell: String,
@@ -22,8 +23,9 @@ const findTx = async (timeLimit) => {
       .find({
         time: {$gt: timeLimit},
       })
-      .limit(1);
-  if (transaction.length > 0) {
+      .limit(1)
+      .catch(async (err) => await handleError(err));
+  if (transaction && transaction.length > 0) {
     return false;
   } else {
     return true;

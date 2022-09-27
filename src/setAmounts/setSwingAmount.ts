@@ -1,11 +1,17 @@
-import {utils} from 'ethers';
-import checkVerb from './checkVerb';
+import {formatAmounts, findBuy, findToken} from './utils';
+import checkVerb from '../utils/checkVerb';
+import handleError from '../utils/handleError';
 
 export default async function setSwingAmount(tokenBalances, stats, sell, buy, sellPrice, buyPrice, swingTradeAmount) {
   const sellObj = findToken(tokenBalances, sell);
   const buyObj = findToken(tokenBalances, buy);
   // @ts-ignore
-  const {sellAmount, flag} = await findAmounts(sellObj, buyObj, stats, swingTradeAmount);
+  const {sellAmount, flag} = await findAmounts(sellObj, buyObj, stats, swingTradeAmount).catch(async (err) => {
+    await handleError(err);
+    return {
+      flag: false,
+    };
+  });
   if (!flag) {
     return {
       flag,
@@ -28,16 +34,14 @@ export default async function setSwingAmount(tokenBalances, stats, sell, buy, se
   };
 }
 
-function findToken(tokenBalances, sell) {
-  for (const token of tokenBalances) {
-    if (token.token === sell) {
-      return token;
-    }
-  }
-}
-
 async function findAmounts(sellObj, buyObj, stats, swingTradeAmount) {
-  const {sellAmount, flag} = await firstTier(sellObj, buyObj, stats, swingTradeAmount);
+  const {sellAmount, flag} = await firstTier(sellObj, buyObj, stats, swingTradeAmount).catch(async (err) => {
+    await handleError(err);
+    return {
+      sellAmount: 0,
+      flag: false,
+    };
+  });
   return {
     flag,
     sellAmount,
@@ -61,23 +65,4 @@ async function firstTier(sellObj, buyObj, stats, swingTradeAmount) {
       sellAmount,
     };
   }
-}
-
-function findBuy(sellAmount, buyObj, sellPrice, buyPrice) {
-  checkVerb(`Sell price => ${sellPrice}`);
-  checkVerb(`Buy price => ${buyPrice}`);
-  const sellAmountUsd = sellAmount * sellPrice;
-  const buyAmount = sellAmountUsd / buyPrice;
-  checkVerb(`Sell amount => ${sellAmount}`);
-  checkVerb(`Buy amount => ${buyAmount}`);
-  return buyAmount - (0.01 * buyAmount);
-}
-
-function formatAmounts(sellAmount, buyAmount, sellDecimals, buyDecmials) {
-  const sellAmountWei = utils.parseUnits(sellAmount.toFixed(6).toString(), sellDecimals);
-  const buyAmountWei = utils.parseUnits(buyAmount.toFixed(6).toString(), buyDecmials);
-  return {
-    sellAmountWei,
-    buyAmountWei,
-  };
 }

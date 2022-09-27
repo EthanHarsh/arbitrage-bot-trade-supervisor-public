@@ -1,12 +1,17 @@
-import {utils} from 'ethers';
-import findTx from './findTransactions';
-import checkVerb from './checkVerb';
+import {formatAmounts, findBuy, findToken} from './utils';
+import {handleError} from '../utils';
+import {findTx, checkVerb} from '../utils';
 
 export default async function setSellAmount(tokenBalances, stats, sell, buy, sellPrice, buyPrice) {
   const sellObj = findToken(tokenBalances, sell);
   const buyObj = findToken(tokenBalances, buy);
   // @ts-ignore
-  const {sellAmount, flag} = await findAmounts(sellObj, buyObj, stats);
+  const {sellAmount, flag} = await findAmounts(sellObj, buyObj, stats).catch(async (err) => {
+    await handleError(err);
+    return {
+      flag: false,
+    };
+  });
   if (!flag) {
     return {
       flag,
@@ -29,17 +34,15 @@ export default async function setSellAmount(tokenBalances, stats, sell, buy, sel
   };
 }
 
-function findToken(tokenBalances, sell) {
-  for (const token of tokenBalances) {
-    if (token.token === sell) {
-      return token;
-    }
-  }
-}
-
 async function findAmounts(sellObj, buyObj, stats) {
   // @ts-ignore
-  const {sellAmount, flag} = await firstTier(sellObj, buyObj, stats);
+  const {sellAmount, flag} = await firstTier(sellObj, buyObj, stats).catch(async (err) => {
+    await handleError(err);
+    return {
+      sellAmount: 0,
+      flag: false,
+    };
+  });
   return {
     flag,
     sellAmount,
@@ -62,7 +65,9 @@ async function firstTier(sellObj, buyObj, stats) {
   } else {
     const time = new Date().getTime();
     const timeLimit = time - 1800000;
-    const timeFlag = await findTx(timeLimit);
+    const timeFlag = await findTx(timeLimit).catch(async (err) => {
+      await handleError(err);
+    });
     checkVerb(`Time flag => ${timeFlag}`);
     if (timeFlag) {
       const sellAmount = amount / 2;
@@ -90,7 +95,9 @@ async function secondTier(amount, amountBuy, stats) {
   } else {
     const time = new Date().getTime();
     const timeLimit = time - 3600000;
-    const timeFlag = await findTx(timeLimit);
+    const timeFlag = await findTx(timeLimit).catch(async (err) => {
+      await handleError(err);
+    });
     checkVerb(`Time flag => ${timeFlag}`);
     if (timeFlag) {
       const sellAmount = amount / 3;
@@ -105,23 +112,4 @@ async function secondTier(amount, amountBuy, stats) {
       };
     }
   }
-}
-
-function findBuy(sellAmount, buyObj, sellPrice, buyPrice) {
-  checkVerb(`Sell price => ${sellPrice}`);
-  checkVerb(`Buy price => ${buyPrice}`);
-  const sellAmountUsd = sellAmount * sellPrice;
-  const buyAmount = sellAmountUsd / buyPrice;
-  checkVerb(`Sell amount => ${sellAmount}`);
-  checkVerb(`Buy amount => ${buyAmount}`);
-  return buyAmount - (0.01 * buyAmount);
-}
-
-function formatAmounts(sellAmount, buyAmount, sellDecimals, buyDecmials) {
-  const sellAmountWei = utils.parseUnits(sellAmount.toFixed(6).toString(), sellDecimals);
-  const buyAmountWei = utils.parseUnits(buyAmount.toFixed(6).toString(), buyDecmials);
-  return {
-    sellAmountWei,
-    buyAmountWei,
-  };
 }

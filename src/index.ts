@@ -1,7 +1,7 @@
 import express from 'express';
 import 'dotenv/config';
-import {formatArray, calculateStats, setSellAmount, setSwingAmount, checkVerb} from './utils';
 import mongoose from 'mongoose';
+import {formatArray, calculateStats, setSellAmount, setSwingAmount, checkVerb, handleError} from './utils';
 
 const app = express();
 
@@ -23,14 +23,32 @@ app.post('/', async (req, res) => {
   const date = new Date();
   checkVerb(`Time: ${date.toUTCString()}`);
   if (req.body.flag === 'swing') {
-    const amountFnObj = await setSwingAmount(tokenBalances, stats, req.body.sell, req.body.buy, req.body.sellPrice, req.body.buyPrice, req.body.tokenAmount);
+    const amountFnObj = await setSwingAmount(tokenBalances, stats, req.body.sell, req.body.buy, req.body.sellPrice, req.body.buyPrice, req.body.tokenAmount).catch(async (err) => {
+      await handleError(err);
+      return {
+        flag,
+        sellAmount: 0,
+        buyAmount: 0,
+        sellAmountWei: 0,
+        buyAmountWei: 0,
+      };
+    });
     sellAmount = amountFnObj.sellAmount;
     buyAmount = amountFnObj.buyAmount;
     sellAmountWei = amountFnObj.sellAmountWei;
     buyAmountWei = amountFnObj.buyAmountWei;
     flag = amountFnObj.flag;
   } else {
-    const amountFnObj = await setSellAmount(tokenBalances, stats, req.body.sell, req.body.buy, req.body.sellPrice, req.body.buyPrice);
+    const amountFnObj = await setSellAmount(tokenBalances, stats, req.body.sell, req.body.buy, req.body.sellPrice, req.body.buyPrice).catch(async (err) => {
+      await handleError(err);
+      return {
+        flag,
+        sellAmount: 0,
+        buyAmount: 0,
+        sellAmountWei: 0,
+        buyAmountWei: 0,
+      };
+    });
     sellAmount = amountFnObj.sellAmount;
     buyAmount = amountFnObj.buyAmount;
     sellAmountWei = amountFnObj.sellAmountWei;
@@ -50,11 +68,20 @@ app.post('/', async (req, res) => {
 });
 
 
-mongoose.connect(process.env.MONGO_URI).then(() => {
-  checkVerb('Connected to MongoDB');
+if (process.env.mongoose) {
+  mongoose.connect(process.env.MONGO_URI)
+      .catch(async (err) => await handleError(err))
+      .then(() => {
+        checkVerb('Connected to MongoDB');
+        startApp();
+      });
+} else {
+  startApp();
+}
+
+function startApp() {
   const PORT:number = parseInt(process.env.PORT) || 9999;
   app.listen(PORT, () => {
     checkVerb(`Listening on port: ${PORT}`);
   });
-});
-
+}

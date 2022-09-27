@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/EthanHarsh/arbitrage-bot-trade-supervisor#readme",
   "dependencies": {
+    "axios": "^0.27.2",
     "dotenv": "^16.0.1",
     "ethers": "^5.6.9",
     "express": "^4.18.1",
